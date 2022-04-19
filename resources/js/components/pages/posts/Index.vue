@@ -1,5 +1,26 @@
 <template>
     <div>
+        <div class="row">
+            <div class="col-sm-6">
+                <form class="mb-4" @submit.prevent="addPost()">
+
+                    <!-- <validation-errors v-if="validationErrors"
+                        :errors="validationErrors"></validation-errors> -->
+
+                    <div class="form-group row">
+                        <label for="title" class="col-sm-2 col-form-label">Title</label>
+                        <input type="text" class="form-control"
+                            v-model="post.title" id="title">
+                    </div>
+                    <div class="form-group row">
+                        <label for="description" class="col-sm-2 col-form-label">Description</label>
+                        <textarea rows="5" type="text" class="form-control"
+                            v-model="post.description" id="description"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
         <div v-if="errored" class="alert alert-danger" role="alert">
             Posts can't be loaded now. Try later.
         </div>
@@ -23,8 +44,16 @@
                         <td>{{ post.title }}</td>
                         <td>{{ post.description }}</td>
                         <td>
-                            <a href="#" class="btn btn-primary mb-2">Edit</a>
-                            <a href="#" class="btn btn-danger">Delete</a>
+                            <div class="row">
+                                <a href="#" class="btn btn-success"
+                                    @click="editPost(post)">
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                </a>
+                                <a href="#" class="btn btn-danger ml-1"
+                                    @click="deletePost(post.id)">
+                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -62,11 +91,11 @@ export default {
                 title: '',
                 body: ''
             },
-            post_id: '',
             pagination: {},
             edit: false,
             loading: true,
-            errored: false
+            errored: false,
+            validationErrors: ''
         }
     },
     mounted() {
@@ -74,7 +103,7 @@ export default {
     },
     methods: {
         getPosts(page_url) {
-            page_url = page_url || '/api/posts'
+            page_url = page_url || `/api/posts`
 
             axios
                 .get(page_url)
@@ -83,8 +112,11 @@ export default {
                     this.makePagination(response.data)
                 })
                 .catch(error => {
-                    console.log(error)
-                    this.errored = true
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: "Post can't be found"
+                    })
                 })
                 .finally(() => this.loading = false)
         },
@@ -96,7 +128,82 @@ export default {
                 next_page_url: response.next_page_url
             }
             this.pagination = pagination
+        },
+        deletePost(id) {
+            axios
+                .delete(`/api/posts/${id}`)
+                .then(response =>
+                    this.getPosts(),
+                    Swal.fire('Post deleted successfully')
+                )
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: "Post can't be found"
+                    })
+                })
+        },
+        addPost() {
+            if (this.edit === false) {
+                axios
+                    .post(`/api/posts`, {
+                        title: this.post.title,
+                        description: this.post.description
+                    })
+                    .then(response => {
+                        this.post.title = ''
+                        this.post.description = ''
+                        this.getPosts()
+                        Swal.fire(response.data.message)
+                    })
+                    .catch(error => {
+                        if (response.status === 422) {
+                            console.log(response.status)
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: this.error.message
+                            })
+                        }
+                    })
+            } else {
+                axios
+                    .put(`/api/posts/${this.post.id}`, {
+                        title: this.post.title,
+                        description: this.post.description
+                    })
+                    .then(response => {
+                        this.post.title = ''
+                        this.post.description = ''
+                        this.getPosts()
+                        Swal.fire('Post updated successfully')
+                    })
+                    .catch(error => {
+                        if (error.response.status === 422) {
+                            this.validationErrors = error.response.data.errors
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: this.error.message
+                            })
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: "Post can't be edited. Post is already deleted"
+                            })
+                    }
+                })
+            }
+        },
+        editPost(post) {
+            this.edit = true
+            this.post.id = post.id
+            this.post.title = post.title
+            this.post.description = post.description
         }
+
     }
 }
 </script>
