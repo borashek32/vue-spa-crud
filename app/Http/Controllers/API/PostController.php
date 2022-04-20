@@ -16,51 +16,37 @@ class PostController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'title'        => 'required|max:255',
-            'description'  => 'required|max:255'
+        $this->validate($request, [
+            'title'        => 'required|min:3|max:255|unique:posts',
+            'description'  => 'required|min:10|max:255'
         ]);
+        $post = new Post([
+            'title'        => $request->get('title'),
+            'description'  => $request->get('description')
+        ]);
+        $post->save();
 
-        if($validator->fails()) {
-
-            return response()->json([
-                'status'  => 422,
-                'errors'  => $validator->messages()
-            ]);
-
-        } else {
-            $post = new Post([
-                'title'        => $request->get('title'),
-                'description'  => $request->get('description')
-            ]);
-            $post->save();
-
-            return response()->json([
-                'status'   =>  200,
-                'message'  => 'Post added successfully'
-            ]);
-        }
+        return response()->json([
+            'status'   =>  200,
+            'message'  => 'Post "' . $post->title . '" added successfully'
+        ]);
     }
 
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'title'        => 'required|max:255',
-            'description'  => 'required|max:255'
+        $this->validate($request, [
+            'title'        => 'required|min:3|max:255|unique:posts',
+            'description'  => 'required|min:10|max:255'
         ]);
-        if ($vakidator->fails()) {
+        $post = Post::find($id);
+        $post->title       =  $request->get('title');
+        $post->description =  $request->get('description');
+        $post->save();
 
-        } else {
-            $post = Post::find($id);
-            $post->title       =  $request->get('title');
-            $post->description =  $request->get('description');
-            $post->save();
-
-            return response()->json([
-                'status'   =>  200,
-                'message'  => 'Post updated successfully'
-            ]);
-        }
+        return response()->json([
+            'status'   =>  200,
+            'message'  => 'Post "' . $post->title . '" updated successfully'
+        ]);
     }
 
     public function destroy($id)

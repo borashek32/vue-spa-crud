@@ -4,8 +4,8 @@
             <div class="col-sm-6">
                 <form class="mb-4" @submit.prevent="addPost()">
 
-                    <!-- <validation-errors v-if="validationErrors"
-                        :errors="validationErrors"></validation-errors> -->
+                    <validation-errors v-if="validationErrors"
+                        :errors="validationErrors"></validation-errors>
 
                     <div class="form-group row">
                         <label for="title" class="col-sm-2 col-form-label">Title</label>
@@ -14,10 +14,13 @@
                     </div>
                     <div class="form-group row">
                         <label for="description" class="col-sm-2 col-form-label">Description</label>
-                        <textarea rows="5" type="text" class="form-control"
+                        <textarea rows="3" type="text" class="form-control"
                             v-model="post.description" id="description"></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Save</button>
+                    <button v-if="edit" type="button"
+                        @click="cancelEditPost(post)"
+                        class="btn btn-light">Back</button>
                 </form>
             </div>
         </div>
@@ -115,7 +118,7 @@ export default {
                     Swal.fire({
                         icon: 'error',
                         title: 'Oops...',
-                        text: "Post can't be found"
+                        text: "Posts can't be found"
                     })
                 })
                 .finally(() => this.loading = false)
@@ -158,15 +161,21 @@ export default {
                         Swal.fire(response.data.message)
                     })
                     .catch(error => {
-                        if (response.status === 422) {
-                            console.log(response.status)
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: this.error.message
-                            })
+                        if (error.response.status === 422) {
+                            this.validationErrors = error.response.data.errors
                         }
                     })
+                    // .catch(errors => {
+                    //     console.log(errors.response.data.errors)
+                    //     Swal.fire({
+                    //         icon: 'error',
+                    //         title: 'Oops...',
+                    //         text: [
+                    //             errors.response.data.errors.title,
+                    //             errors.response.data.errors.description
+                    //         ]
+                    //     })
+                    // })
             } else {
                 axios
                     .put(`/api/posts/${this.post.id}`, {
@@ -174,26 +183,18 @@ export default {
                         description: this.post.description
                     })
                     .then(response => {
-                        this.post.title = ''
-                        this.post.description = ''
-                        this.getPosts()
-                        Swal.fire('Post updated successfully')
+                        if (response.status === 200) {
+                            this.post.title = ''
+                            this.post.description = ''
+                            this.edit = false
+                            this.getPosts()
+                            Swal.fire(response.data.message)
+                        }
                     })
                     .catch(error => {
                         if (error.response.status === 422) {
                             this.validationErrors = error.response.data.errors
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: this.error.message
-                            })
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: "Post can't be edited. Post is already deleted"
-                            })
-                    }
+                        }
                 })
             }
         },
@@ -202,8 +203,12 @@ export default {
             this.post.id = post.id
             this.post.title = post.title
             this.post.description = post.description
+        },
+        cancelEditPost(post) {
+            this.edit = false;
+            this.post.title = '';
+            this.post.description = '';
         }
-
     }
 }
 </script>
