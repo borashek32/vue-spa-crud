@@ -1,20 +1,24 @@
 require('./bootstrap');
 
-window.Vue = require('vue').default;
-
-import Vue from 'vue';
+import { createApp } from 'vue'
+import router from './router'
 import App from './components/App'
-import Navbar from './components/includes/NavBar'
-import Footer from './components/includes/Footer'
-import Posts from './components/pages/posts/Index'
-import ValidationErrors from './components/includes/ValidationErrors'
+import includes from './components/includes'
+import components from './components/UI'
+import posts from './components/posts'
 
-Vue.component('navbar', Navbar);
-Vue.component('site-footer', Footer);
-Vue.component('posts', Posts);
-Vue.component('validation-errors', ValidationErrors)
+const app = createApp(App)
 
-const app = new Vue({
-    el: '#app',
-    render: h => h(App)
-});
+includes.forEach(include => {
+  app.component(include.name, include)
+})
+
+components.forEach(component => {
+  app.component(component.name, component)
+})
+
+posts.forEach(post => {
+  app.component(post.name, post)
+})
+
+app.use(router).mount('#app')

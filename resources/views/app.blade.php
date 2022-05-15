@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
 
-    <title>Vue SPA CRUD</title>
+    <title>Vue CRUD dashboard</title>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
@@ -39,7 +39,9 @@
     </div>
   @endif
 
-  <div id='app'></div>
+  <div id='app'>
+    <router-view></router-view>
+  </div>
 
   <!-- Bootstrap&Jquery -->
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>

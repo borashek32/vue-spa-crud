@@ -11,31 +11,49 @@ class PostController extends Controller
 {
     public function index()
     {
-        return Post::latest()->paginate(4);
+      $posts = Post::latest()->paginate(10);
+
+      if ($posts) {
+        return $posts;
+      } else {
+        return response()->json([
+          'status'   => 500,
+          'message'  => "Posts can not be found"
+        ]);
+      }
     }
 
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'title'        => 'required|min:3|max:255|unique:posts',
-            'description'  => 'required|min:10|max:255'
-        ]);
-        $post = new Post([
-            'title'        => $request->get('title'),
-            'description'  => $request->get('description')
-        ]);
-        $post->save();
+      $request->validate([
+        'title'        => 'required|min:3|max:255',
+        'description'  => 'required|min:10|max:255'
+      ]);
 
+      $post = new Post([
+        'title'        => $request->get('title'),
+        'description'  => $request->get('description')
+      ]);
+      $post->save();
+
+      if ($post) {
         return response()->json([
-            'status'   =>  200,
-            'message'  => 'Post "' . $post->title . '" added successfully'
+          'status'   =>  200,
+          'message'  => 'Post "' . $post->title . '" added successfully'
         ]);
+
+      } else {
+        return response()->json([
+          'status'  => 500,
+          'message' => 'Something went wrong'
+        ]);
+      }
     }
 
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'title'        => 'required|min:3|max:255|unique:posts',
+        $request->validate([
+            'title'        => 'required|min:3|max:255',
             'description'  => 'required|min:10|max:255'
         ]);
         $post = Post::find($id);
@@ -51,6 +69,20 @@ class PostController extends Controller
 
     public function destroy($id)
     {
-        $post = Post::find($id)->delete();
+      $post = Post::find($id);
+
+      if ($post) {
+        $post->delete();
+
+        return response()->json([
+          'status'    => 200,
+          'message'   => 'Post ' . $post->title . 'deleted successfully.'
+        ]);
+      } else {
+        return response()->json([
+          'status'  => 404,
+          'message' => 'Post can not be found'
+        ]);
+      }
     }
 }
