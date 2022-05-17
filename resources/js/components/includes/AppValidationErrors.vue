@@ -1,16 +1,13 @@
 <template>
   <div
     v-if="validationErrors"
-    class="alert alert-danger"
     >
-    <ul>
-      <p
-        v-for="(value, index) in validationErrors"
-        :key="index"
-        >
-        {{ value }}
-      </p>
-    </ul>
+    <p class="errors"
+      v-for="(value, index) in validationErrors"
+      :key="index"
+      >
+      {{ value }}
+    </p>
   </div>
 </template>
 
@@ -28,3 +25,9 @@ export default {
   }
 }
 </script>
+
+<style lang="sass" scoped>
+.errors
+  color: red
+  margin-top: 2px
+</style>

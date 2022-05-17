@@ -4,8 +4,6 @@
 
     <div class="container main">
       <div class="mt-4 mb-4">
-        <h1 class="text-center">Vue dashboard</h1>
-
         <div>
           <posts-list
             @create="createPost"

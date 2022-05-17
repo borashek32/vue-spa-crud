@@ -9,8 +9,16 @@
           ></app-validation-errors>
 
         <app-input v-model="post.title"></app-input>
+        <app-validation-errors
+          v-if="validationTitle"
+          :errors="validationTitle"
+          ></app-validation-errors>
 
         <app-textarea v-model="post.description"></app-textarea>
+        <app-validation-errors
+          v-if="validationDescription"
+          :errors="validationDescription"
+          ></app-validation-errors>
 
         <div class="btn-area">
           <app-button @click="addPost">
@@ -92,7 +100,9 @@ export default {
         description: ''
       },
       edit: false,
-      validationErrors: ''
+      validationErrors: '',
+      validationTitle: '',
+      validationDescription: ''
     }
   },
   mounted() {
@@ -143,18 +153,24 @@ export default {
               this.post.title = ''
               this.post.description = ''
               this.validationErrors = ''
+              this.validationTitle = ''
+              this.validationDescription = ''
               Swal.fire(response.data.message)
               this.getPosts()
             }
           })
           .catch(error => {
             if (error.response.status === 422) {
-              this.validationErrors = error.response.data.errors
+              this.validationTitle = error.response.data.errors.title
+              this.validationDescription = error.response.data.errors.description
             }
             if (error.response.status === 500) {
-              this.validationErrors = response.data.message
+              Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Something went wrong! Please, try later',
+              })
             }
-            console.log(error)
           }
         )
       } else {
@@ -168,6 +184,8 @@ export default {
               this.post.title = ''
               this.post.description = ''
               this.validationErrors = ''
+              this.validationTitle = ''
+              this.validationDescription = ''
               this.edit = false
               this.getPosts()
               Swal.fire(response.data.message)
@@ -175,7 +193,15 @@ export default {
           })
           .catch(error => {
             if (error.response.status === 422) {
-              this.validationErrors = error.response.data.errors
+              this.validationTitle = error.response.data.errors.title
+              this.validationDescription = error.response.data.errors.description
+            }
+            if (error.response.status === 404) {
+              Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Post can not be found. Please, try later',
+              })
             }
         })
       }
